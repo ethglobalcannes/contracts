@@ -4,18 +4,20 @@ pragma solidity ^0.8.20;
 import {Script, console} from "forge-std/Script.sol";
 import {AttestationVerifier} from "../src/AttestationVerifier.sol";
 
+address constant attestationVerifier = 0x027f7874bc35A691984f2545c05ac0E3C8616e2f; 
+address constant registry = 0xaD67FE66660Fb8dFE9d6b1b4240d8650e30F6019; 
+address constant mockGamma = 0xEe5b0Ba2793267da967E800Ac926620742620D13;  
+
 contract AttestationVerifierScript is Script {
     function run() external {
         vm.startBroadcast();
 
-        AttestationVerifier verifier = new AttestationVerifier(
-            address(0), // registry — set later
-            bytes32(0), // extensionId — set later
-            address(0)  // verifyingContract (MockGamma) — set later
-        );
-
+        AttestationVerifier(attestationVerifier).setRegistry(registry, "0x");
+        
+        AttestationVerifier(attestationVerifier).setVerifyingContract(mockGamma);
+    
         vm.stopBroadcast();
 
-        console.log("AttestationVerifier deployed at:", address(verifier));
+       
     }
 }
