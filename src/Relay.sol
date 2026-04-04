@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-contract Relay {
-    bytes32 public constant OP_TYPE_PRICING = bytes32("PRICING");
-    bytes32 public constant OP_COMMAND_QUOTE = bytes32("QUOTE");
+import {InstructionSender} from "./InstructionSender.sol";
 
+contract Relay {
     enum RFQStatus {
         None,
         Active,
@@ -36,12 +35,7 @@ contract Relay {
 
     event SmartAccountUpdated(address indexed oldSmartAccount, address indexed newSmartAccount);
     event QuotePublisherUpdated(address indexed oldQuotePublisher, address indexed newQuotePublisher);
-    event TeeInstructionsSent(
-        bytes32 indexed rfqId,
-        bytes32 opType,
-        bytes32 opCommand,
-        bytes payload
-    );
+    event InstructionSenderUpdated(address indexed oldSender, address indexed newSender);
     event QuoteSigned(
         bytes32 indexed rfqId,
         address indexed maker,
@@ -57,6 +51,7 @@ contract Relay {
     address public owner;
     address public smartAccount;
     address public quotePublisher;
+    InstructionSender public instructionSender;
     uint256 public nextNonce;
 
     mapping(bytes32 => RFQ) public rfqs;
@@ -76,10 +71,13 @@ contract Relay {
         _;
     }
 
-    constructor(address smartAccount_, address quotePublisher_) {
+    constructor(address smartAccount_, address quotePublisher_, address instructionSender_) {
         owner = msg.sender;
         smartAccount = smartAccount_;
         quotePublisher = quotePublisher_;
+        if (instructionSender_ != address(0)) {
+            instructionSender = InstructionSender(instructionSender_);
+        }
     }
 
     function submitRFQ(
@@ -88,7 +86,7 @@ contract Relay {
         uint256 expiry,
         bool isPut,
         uint256 quantity
-    ) external onlySmartAccount returns (bytes32 rfqId) {
+    ) external payable onlySmartAccount returns (bytes32 rfqId) {
         if (asset == address(0)) revert ZeroAddress();
         if (strike == 0) revert InvalidStrike();
         if (quantity == 0) revert InvalidQuantity();
@@ -113,8 +111,9 @@ contract Relay {
             status: RFQStatus.Active
         });
 
+        // Send pricing instruction to TEE via official Flare FCE pipeline
         bytes memory payload = abi.encode(asset, strike, expiry, isPut, quantity, rfqId);
-        emit TeeInstructionsSent(rfqId, OP_TYPE_PRICING, OP_COMMAND_QUOTE, payload);
+        instructionSender.sendInstruction{value: msg.value}(payload);
     }
 
     function publishQuote(
@@ -169,6 +168,14 @@ contract Relay {
         address oldQuotePublisher = quotePublisher;
         quotePublisher = newQuotePublisher;
         emit QuotePublisherUpdated(oldQuotePublisher, newQuotePublisher);
+    }
+
+    function setInstructionSender(address newSender) external onlyOwner {
+        if (newSender == address(0)) revert ZeroAddress();
+
+        address oldSender = address(instructionSender);
+        instructionSender = InstructionSender(newSender);
+        emit InstructionSenderUpdated(oldSender, newSender);
     }
 
     function getRFQ(bytes32 rfqId) external view returns (RFQ memory) {
