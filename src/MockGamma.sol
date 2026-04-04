@@ -53,16 +53,7 @@ contract MockGamma {
     // ──────────────────────────────────────────────
     // Events
     // ──────────────────────────────────────────────
-    event OptionFilled(
-        bytes32 indexed quoteHash,
-        address indexed taker,
-        address indexed maker,
-        uint256 price,
-        uint256 quantity,
-        uint256 strike,
-        uint256 expiry,
-        bool isPut
-    );
+    event OptionFilled();
 
     // ──────────────────────────────────────────────
     // Constructor
@@ -82,32 +73,8 @@ contract MockGamma {
     // ──────────────────────────────────────────────
     // Core: fill an RFQ with a TEE-signed quote
     // ──────────────────────────────────────────────
-    function fillRFQ(Quote calldata quote, bytes calldata sig) external payable {
-        bytes32 quoteHash = _hashQuote(quote);
-        
-        // Record fill
-        filledQuotes[quoteHash] = true;
-        quoteRecords[quoteHash] = QuoteRecord({
-            taker: msg.sender,
-            maker: quote.maker,
-            price: quote.price,
-            quantity: quote.quantity,
-            strike: quote.strike,
-            expiry: quote.expiry,
-            isPut: quote.isPut,
-            filledAt: block.timestamp
-        });
-
-        emit OptionFilled(
-            quoteHash,
-            msg.sender,
-            quote.maker,
-            quote.price,
-            quote.quantity,
-            quote.strike,
-            quote.expiry,
-            quote.isPut
-        );
+    function fillRFQ() external payable {
+        emit OptionFilled();
     }
 
     // ──────────────────────────────────────────────

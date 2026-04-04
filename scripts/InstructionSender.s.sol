@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import {Script, console} from "forge-std/Script.sol";
 import {InstructionSender} from "../src/InstructionSender.sol";
-import {MockGamma} from "../src/MockGamma.sol";
+
 
 address constant TEE_EXTENSION_REGISTRY = 0x3d478d43426081BD5854be9C7c5c183bfe76C981;
 address constant TEE_MACHINE_REGISTRY = 0x5918Cd58e5caf755b8584649Aa24077822F87613;
@@ -43,28 +43,10 @@ contract InstructionSenderScript is Script {
 }
 
 contract RegisterCustomInstructionScript is Script {
-    address constant FXRP = 0x0b6A3645c240605887a5532109323A3E12273dc7;
 
     function run() external {
-        // Build the fillRFQ calldata in Solidity (no more hardcoded hex)
-        MockGamma.Quote memory quote = MockGamma.Quote({
-            assetAddress: FXRP,
-            chainId: 114,
-            isPut: false,
-            strike: 2000000000000000000,
-            expiry: 1720000000,
-            maker: 0x8062909712F90a8f78e42c75401086De3eE95fBe,
-            nonce: 1,
-            price: 50000000000000000,
-            quantity: 1000000000000000000,
-            isTakerBuy: true,
-            validUntil: 1720000000,
-            usd: 5,
-            collateralAsset: address(0)
-        });
-        bytes memory sig = "";
-
-        bytes memory callData = abi.encodeWithSelector(MockGamma.fillRFQ.selector, quote, sig);
+        // fillRFQ() takes no parameters, so calldata is just the selector
+        bytes memory callData = abi.encodeWithSignature("fillRFQ()");
 
         IMasterAccountController.CustomCall[] memory calls = new IMasterAccountController.CustomCall[](1);
         calls[0] = IMasterAccountController.CustomCall({

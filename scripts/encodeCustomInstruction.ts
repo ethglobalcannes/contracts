@@ -8,66 +8,27 @@ import {
 
 // ─── Addresses ──────────────────────────────────────
 const MOCK_GAMMA_ADDRESS: Address =
-  "0x51947aC30bB1F289F20bA740E1664cE20E23F94A";
+  "0x97E812a7187E5ce2f6c522A017F517e6bcdc678B";
 const MASTER_ACCOUNT_CONTROLLER: Address =
   "0x434936d47503353f06750Db1A444DBDC5F0AD37c";
 
-// ─── MockGamma ABI (fillRFQ only) ──────────────────
+// ─── MockGamma ABI (current fillRFQ) ───────────────
 const mockGammaAbi = [
   {
     type: "function",
     name: "fillRFQ",
-    inputs: [
-      {
-        name: "quote",
-        type: "tuple",
-        components: [
-          { name: "assetAddress", type: "address" },
-          { name: "chainId", type: "uint256" },
-          { name: "isPut", type: "bool" },
-          { name: "strike", type: "uint256" },
-          { name: "expiry", type: "uint256" },
-          { name: "maker", type: "address" },
-          { name: "nonce", type: "uint256" },
-          { name: "price", type: "uint256" },
-          { name: "quantity", type: "uint256" },
-          { name: "isTakerBuy", type: "bool" },
-          { name: "validUntil", type: "uint256" },
-          { name: "usd", type: "uint256" },
-          { name: "collateralAsset", type: "address" },
-        ],
-      },
-      { name: "sig", type: "bytes" },
-    ],
+    inputs: [],
     outputs: [],
     stateMutability: "payable",
   },
 ] as const;
 
-// ─── Quote values (fill with real values) ───────────
-const quote = {
-  assetAddress: "0x0b6A3645c240605887a5532109323A3E12273dc7" as Address, // FXRP
-  chainId: 114n, // Coston2
-  isPut: false,
-  strike: 2000000000000000000n, // 2.0 (18 decimals)
-  expiry: 1720000000n,
-  maker: "0x8062909712F90a8f78e42c75401086De3eE95fBe" as Address,
-  nonce: 1n,
-  price: 50000000000000000n, // 0.05 premium (18 decimals)
-  quantity: 1000000000000000000n, // 1.0 (18 decimals)
-  isTakerBuy: true,
-  validUntil: 1720000000n,
-  usd: 5n,
-  collateralAsset: "0x0000000000000000000000000000000000000000" as Address,
-};
-
-const sig: `0x${string}` = "0x"; // TEE EIP-712 signature (empty for registration)
-
 // ─── Step 1: Encode fillRFQ calldata ────────────────
+// Per the current MockGamma implementation, fillRFQ() takes no arguments,
+// so the calldata is just the 4-byte selector.
 const calldata = encodeFunctionData({
   abi: mockGammaAbi,
   functionName: "fillRFQ",
-  args: [quote, sig],
 });
 
 // ─── Step 2: Build CustomCall array ─────────────────
@@ -80,7 +41,7 @@ type CustomCall = {
 const customCalls: CustomCall[] = [
   {
     targetContract: MOCK_GAMMA_ADDRESS,
-    value: 5n,
+    value: 0n,
     data: calldata,
   },
 ];
