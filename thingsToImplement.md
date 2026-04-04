@@ -1,4 +1,4 @@
 MockGamma --> Okay
 InstructionSender --> Okay
-AttestationVerifier --> extensionId, teeKeyOverride
+AttestationVerifier --> teeKeyOverride
 Relay --> smartAccount, quotePublisher

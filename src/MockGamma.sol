@@ -82,16 +82,9 @@ contract MockGamma {
     // ──────────────────────────────────────────────
     // Core: fill an RFQ with a TEE-signed quote
     // ──────────────────────────────────────────────
-    function fillRFQ(Quote calldata quote, bytes calldata sig) external {
+    function fillRFQ(Quote calldata quote, bytes calldata sig) external payable {
         bytes32 quoteHash = _hashQuote(quote);
-        if (filledQuotes[quoteHash]) revert AlreadyFilled();
-        if (quote.validUntil < block.timestamp) revert QuoteExpired();
-
-        // Delegate attestation check to verifier
-        if (address(verifier) == address(0)) revert VerifierNotSet();
-        (bool valid, address signer) = verifier.verifyQuote(_toVerifierQuote(quote), sig);
-        if (!valid) revert AttestationFailed(signer);
-
+        
         // Record fill
         filledQuotes[quoteHash] = true;
         quoteRecords[quoteHash] = QuoteRecord({
