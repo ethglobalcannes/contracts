@@ -11,6 +11,8 @@ contract InstructionSender {
     ITeeExtensionRegistry public immutable TEE_EXTENSION_REGISTRY;
     ITeeMachineRegistry public immutable TEE_MACHINE_REGISTRY;
 
+    address public owner; 
+
     uint256 private _extensionId;
 
     constructor(
@@ -19,6 +21,12 @@ contract InstructionSender {
     ) {
         TEE_EXTENSION_REGISTRY = ITeeExtensionRegistry(_teeExtensionRegistry);
         TEE_MACHINE_REGISTRY = ITeeMachineRegistry(_teeMachineRegistry);
+        owner = msg.sender;
+    }
+
+    modifier onlyOwner() {
+        require(owner == msg.sender, "Not the owner"); 
+        _; 
     }
 
     /// @notice Finds and sets this contract's extension ID. Can only be set once.
@@ -37,7 +45,7 @@ contract InstructionSender {
 
     /// @notice Send an instruction to the TEE.
     /// @param message ABI-encoded instruction params
-    function sendInstruction(bytes calldata message) external payable returns (bytes32) {
+    function sendInstruction(bytes calldata message) external payable onlyOwner returns (bytes32) {
         address[] memory teeIds = TEE_MACHINE_REGISTRY.getRandomTeeIds(_getExtensionId(), 1);
         address[] memory cosigners = new address[](0);
 

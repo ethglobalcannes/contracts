@@ -240,5 +240,8 @@ contract MockGammaTest is Test {
         vm.expectRevert(MockGamma.VerifierNotSet.selector);
         vm.prank(taker);
         g2.fillRFQ(q, sig);
+
+
+        (bytes4 selector) = MockGamma.fillRFQ.selector;
     }
 }
