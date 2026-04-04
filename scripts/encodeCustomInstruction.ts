@@ -8,7 +8,7 @@ import {
 
 // ─── Addresses ──────────────────────────────────────
 const MOCK_GAMMA_ADDRESS: Address =
-  "0xaFB1F635bB000851bC7e2cE7e92CE078BE3C233b";
+  "0x51947aC30bB1F289F20bA740E1664cE20E23F94A";
 const MASTER_ACCOUNT_CONTROLLER: Address =
   "0x434936d47503353f06750Db1A444DBDC5F0AD37c";
 
@@ -40,7 +40,7 @@ const mockGammaAbi = [
       { name: "sig", type: "bytes" },
     ],
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
   },
 ] as const;
 
@@ -80,7 +80,7 @@ type CustomCall = {
 const customCalls: CustomCall[] = [
   {
     targetContract: MOCK_GAMMA_ADDRESS,
-    value: 0n,
+    value: 5n,
     data: calldata,
   },
 ];

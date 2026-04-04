@@ -17,7 +17,7 @@ interface IMasterAccountController {
 
 contract TestExecuteInstruction is Test {
     address constant MASTER_ACCOUNT_CONTROLLER = 0x434936d47503353f06750Db1A444DBDC5F0AD37c;
-    address constant MOCK_GAMMA = 0xEe5b0Ba2793267da967E800Ac926620742620D13;
+    address constant MOCK_GAMMA = 0x51947aC30bB1F289F20bA740E1664cE20E23F94A;
     address constant FXRP = 0x0b6A3645c240605887a5532109323A3E12273dc7;
 
     address public caller = 0xcA0Bf4Cbc1Cf8c4b5FD7984b42AF907099084466;
