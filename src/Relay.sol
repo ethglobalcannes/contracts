@@ -22,7 +22,7 @@ contract Relay {
     }
 
     error NotOwner();
-    error NotSmartAccount();
+    error NotSubmitter();
     error NotQuotePublisher();
     error ZeroAddress();
     error InvalidExpiry();
@@ -33,7 +33,7 @@ contract Relay {
     error RFQNotFound();
     error RFQAlreadyFinalized();
 
-    event SmartAccountUpdated(address indexed oldSmartAccount, address indexed newSmartAccount);
+    event SubmitterUpdated(address indexed oldSubmitter, address indexed newSubmitter);
     event QuotePublisherUpdated(address indexed oldQuotePublisher, address indexed newQuotePublisher);
     event InstructionSenderUpdated(address indexed oldSender, address indexed newSender);
     event QuoteSigned(
@@ -49,7 +49,7 @@ contract Relay {
     event RFQCancelled(bytes32 indexed rfqId);
 
     address public owner;
-    address public smartAccount;
+    address public submitter;
     address public quotePublisher;
     InstructionSender public instructionSender;
     uint256 public nextNonce;
@@ -61,8 +61,8 @@ contract Relay {
         _;
     }
 
-    modifier onlySmartAccount() {
-        if (msg.sender != smartAccount) revert NotSmartAccount();
+    modifier onlySubmitter() {
+        if (msg.sender != submitter) revert NotSubmitter();
         _;
     }
 
@@ -71,9 +71,9 @@ contract Relay {
         _;
     }
 
-    constructor(address smartAccount_, address quotePublisher_, address instructionSender_) {
+    constructor(address submitter_, address quotePublisher_, address instructionSender_) {
         owner = msg.sender;
-        smartAccount = smartAccount_;
+        submitter = submitter_;
         quotePublisher = quotePublisher_;
         if (instructionSender_ != address(0)) {
             instructionSender = InstructionSender(instructionSender_);
@@ -86,7 +86,7 @@ contract Relay {
         uint256 expiry,
         bool isPut,
         uint256 quantity
-    ) external payable onlySmartAccount returns (bytes32 rfqId) {
+    ) external payable onlySubmitter returns (bytes32 rfqId) {
         if (asset == address(0)) revert ZeroAddress();
         if (strike == 0) revert InvalidStrike();
         if (quantity == 0) revert InvalidQuantity();
@@ -143,7 +143,7 @@ contract Relay {
         );
     }
 
-    function cancelRFQ(bytes32 rfqId) external onlySmartAccount {
+    function cancelRFQ(bytes32 rfqId) external onlySubmitter {
         RFQ storage rfq = rfqs[rfqId];
         if (rfq.status == RFQStatus.None) revert RFQNotFound();
         if (rfq.status == RFQStatus.Quoted || rfq.status == RFQStatus.Cancelled) {
@@ -154,12 +154,12 @@ contract Relay {
         emit RFQCancelled(rfqId);
     }
 
-    function setSmartAccount(address newSmartAccount) external onlyOwner {
-        if (newSmartAccount == address(0)) revert ZeroAddress();
+    function setSubmitter(address newSubmitter) external onlyOwner {
+        if (newSubmitter == address(0)) revert ZeroAddress();
 
-        address oldSmartAccount = smartAccount;
-        smartAccount = newSmartAccount;
-        emit SmartAccountUpdated(oldSmartAccount, newSmartAccount);
+        address oldSubmitter = submitter;
+        submitter = newSubmitter;
+        emit SubmitterUpdated(oldSubmitter, newSubmitter);
     }
 
     function setQuotePublisher(address newQuotePublisher) external onlyOwner {
